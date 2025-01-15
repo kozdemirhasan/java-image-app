@@ -8,6 +8,9 @@ WORKDIR /app
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 
+# Maven wrapper'ı çalıştırılabilir yap
+RUN chmod +x ./mvnw
+
 # Bağımlılıkları indir
 RUN ./mvnw dependency:go-offline
 
@@ -27,13 +30,7 @@ WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
 
 # Render'ın kullanacağı port
-ENV PORT 8080
-
-# JVM opsiyonları için environment variable
-ENV JAVA_OPTS=""
+ENV PORT=8080
 
 # Uygulamayı başlat
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=$PORT -jar app.jar"]
-
-# Port'u expose et
-EXPOSE 8080
+CMD ["java", "-jar", "app.jar"]
