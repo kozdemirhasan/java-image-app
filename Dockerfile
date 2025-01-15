@@ -1,3 +1,5 @@
+FROM ubuntu:latest AS build
+
 # 1. Base image olarak OpenJDK kullanıyoruz
 FROM openjdk:17-jdk-slim
 
