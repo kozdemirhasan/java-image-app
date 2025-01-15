@@ -1,20 +1,39 @@
-FROM ubuntu:latest AS build
+# Build aşaması için JDK 17 kullanan bir base image
+FROM eclipse-temurin:17-jdk-focal as builder
 
-# 1. Base image olarak OpenJDK kullanıyoruz
-FROM openjdk:17-jdk-slim
+# Çalışma dizinini ayarla
+WORKDIR /app
 
-# 2. Uygulama içinde oluşan JAR dosyasını container'a kopyalıyoruz
-ARG JAR_FILE=target/demo-0.0.1-SNAPSHOT.jar
-COPY ${JAR_FILE} app.jar
+# Maven wrapper ve pom.xml dosyasını kopyala
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
 
-# 3. Render'ın otomatik olarak tanıması için uygulama portunu ayarlıyoruz
+# Bağımlılıkları indir
+RUN ./mvnw dependency:go-offline
+
+# Kaynak kodları kopyala
+COPY src ./src/
+
+# Uygulamayı derle
+RUN ./mvnw package -DskipTests
+
+# Çalışma aşaması için JRE 17 kullanan minimal bir image
+FROM eclipse-temurin:17-jre-focal
+
+# Çalışma dizinini ayarla
+WORKDIR /app
+
+# Builder aşamasından JAR dosyasını kopyala
+COPY --from=builder /app/target/*.jar app.jar
+
+# Render'ın kullanacağı port
 ENV PORT 8080
 
-# 4. JVM opsiyonlarını (opsiyonel olarak) ayarlamak için bir ENV ekliyoruz
+# JVM opsiyonları için environment variable
 ENV JAVA_OPTS=""
 
-# 5. Uygulamayı başlatıyoruz
+# Uygulamayı başlat
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=$PORT -jar app.jar"]
 
-# 6. Render'ın dinlemesi için 8080 portunu expose ediyoruz
+# Port'u expose et
 EXPOSE 8080
