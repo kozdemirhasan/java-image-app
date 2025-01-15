@@ -1,0 +1,53 @@
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(45deg, #2196F3, #E91E63);
+    padding: 20px;
+}
+
+.auth-card {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.gradient-button {
+    background: linear-gradient(45deg, #2196F3, #E91E63);
+    border: none;
+    padding: 12px;
+}
+
+.gradient-button:hover {
+    opacity: 0.9;
+}
+
+.social-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.social-buttons .btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.input-group-text {
+    background: transparent;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #2196F3;
+} 
