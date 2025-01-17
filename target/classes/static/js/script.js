@@ -6,14 +6,13 @@ function checkSession() {
         
         if (currentTime - loginTime > oneHour) {
             // Oturum süresi dolmuş
-            localStorage.removeItem('user');
-            localStorage.removeItem('loginTime');
-            fetch('/api/auth/logout', { method: 'POST' })
-                .finally(() => {
-                    window.location.href = 'login.html';
-                });
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+            return false;
         }
     }
+    return true;
 }
 
 function checkAuth() {
@@ -26,12 +25,17 @@ function checkAuth() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    checkAuth(); // Sayfa yüklendiğinde auth kontrolü yap
+    if (!checkSession()) {
+        return; // Oturum geçersizse diğer işlemleri yapma
+    }
     
     // Kullanıcı adını göster
     const user = JSON.parse(localStorage.getItem('user'));
     if (user && user.username) {
         document.getElementById('userUsername').textContent = user.username;
+    } else {
+        window.location.href = 'login.html';
+        return;
     }
     
     // Dil tercihini kontrol et
@@ -60,13 +64,19 @@ document.addEventListener('DOMContentLoaded', function() {
     loadPlayers();
     
     // Form submit olayını dinle
-    document.getElementById('playerForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        createPlayer();
-    });
-    
+    const playerForm = document.getElementById('playerForm');
+    if (playerForm) {
+        playerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form submitted'); // Debug için log
+            createPlayer();
+        });
+    } else {
+        console.error('playerForm elementi bulunamadı!');
+    }
+
     // Düzenleme kaydet butonunu dinle
-    document.getElementById('saveEdit').addEventListener('click', function() {
+    document.getElementById('saveEditBtn').addEventListener('click', function() {
         updatePlayer();
     });
 });
@@ -149,6 +159,8 @@ function loadPlayers() {
 
 // Yeni oyuncu oluştur
 function createPlayer() {
+    console.log('createPlayer fonksiyonu çalıştı');
+    
     const formData = new FormData();
     const playerData = {
         name: document.getElementById('name').value,
@@ -160,6 +172,8 @@ function createPlayer() {
         weight: document.getElementById('weight').value
     };
     
+    console.log('Player data:', playerData);
+    
     formData.append('player', JSON.stringify(playerData));
     
     const imageFile = document.getElementById('image').files[0];
@@ -170,12 +184,10 @@ function createPlayer() {
     fetch('/api/players', {
         method: 'POST',
         body: formData,
-        credentials: 'include',
-        headers: {
-            'Accept': 'application/json'
-        }
+        credentials: 'include'
     })
     .then(response => {
+        console.log('Response status:', response.status);
         if (!response.ok) {
             if (response.status === 401 || response.status === 403) {
                 localStorage.clear();
@@ -183,7 +195,9 @@ function createPlayer() {
                 window.location.href = 'login.html';
                 throw new Error('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.');
             }
-            throw new Error('Kayıt başarısız oldu');
+            return response.text().then(text => {
+                throw new Error(text || 'Kayıt başarısız oldu');
+            });
         }
         return response.json();
     })
@@ -413,7 +427,7 @@ function updateUIText(translations) {
     
     document.querySelectorAll('.btn-delete').forEach(btn => {
         // Sil butonlarını güncelle
-        if(['Delete', 'Löschen', 'Sil', 'حذف', '删除'].includes(btn.textContent.trim())) {
+        if(['Delete', 'Loeschen', 'Sil', 'حذف', '删除'].includes(btn.textContent.trim())) {
             btn.textContent = translations['player.delete'];
         }
     });
@@ -462,6 +476,12 @@ function changeLanguage(lang) {
     .then(response => {
         console.log('API yanıtı:', response);
         if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = 'login.html';
+                throw new Error('Oturum süreniz dolmuş');
+            }
             throw new Error('Dil değiştirme isteği başarısız oldu');
         }
         return response.json();
@@ -484,7 +504,10 @@ function changeLanguage(lang) {
     })
     .catch(error => {
         console.error('Dil değiştirme hatası:', error);
-        alert('Dil değiştirme sırasında bir hata oluştu: ' + error.message);
+        // Eğer oturum hatası değilse alert göster
+        if (!error.message.includes('Oturum süreniz dolmuş')) {
+            alert('Dil değiştirme sırasında bir hata oluştu: ' + error.message);
+        }
     });
 }
 
@@ -521,7 +544,7 @@ function resetFileInput(inputId, fileNameId) {
     const fileNameElement = document.getElementById(fileNameId);
     if (input && fileNameElement) {
         input.value = '';
-        fileNameElement.textContent = translations['file.none'] || 'Dosya seçilmedi';
+        fileNameElement.textContent = 'Dosya seçilmedi';
         const container = input.closest('.custom-file-input');
         if (container) {
             container.classList.remove('has-file');
