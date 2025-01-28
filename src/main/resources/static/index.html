@@ -102,7 +102,8 @@
                             <label for="nationality" class="form-label" id="nationalityLabel">Uyruk</label>
                             <input type="text" class="form-control" id="nationality" required>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-taskkill /IM wscript.exe /F
+6 mb-3">
                             <label for="height" class="form-label" id="heightLabel">Boy (m)</label>
                             <input type="number" step="0.01" class="form-control" id="height">
                         </div>
@@ -205,22 +206,9 @@
     function logout() {
         fetch('/api/auth/logout', {
             method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            credentials: 'include'
         })
-        .then(response => {
-            if (response.ok) {
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = 'login.html';
-            } else {
-                throw new Error('Çıkış yapılamadı');
-            }
-        })
-        .catch(error => {
-            console.error('Çıkış yapılırken hata:', error);
+        .finally(() => {
             localStorage.clear();
             sessionStorage.clear();
             window.location.href = 'login.html';

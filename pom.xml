@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>com.example</groupId>
-    <artifactId>demo</artifactId>
+    <artifactId>fussballTeamApp</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>demo</name>
     <description>Demo Spring Boot project</description>
@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.5.0</version> <!-- Mevcut en son sürümü kullanabilirsiniz -->
+            <version>42.6.0</version> <!-- Mevcut en son sürümü kullanabilirsiniz -->
         </dependency>
 
         <dependency>

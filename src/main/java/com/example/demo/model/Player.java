@@ -1,10 +1,17 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
+import java.time.LocalDate;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import java.time.LocalDate;
 
 @Data
 @Entity
@@ -19,6 +26,7 @@ public class Player {
     private String name;
     
     @NotNull(message = "Doğum tarihi boş olamaz")
+    @Column(name = "birth_date")
     private LocalDate birthDate;
     
     @NotBlank(message = "Pozisyon boş olamaz")
@@ -33,8 +41,9 @@ public class Player {
     private Double weight;
     
     @Lob
-    @Column(columnDefinition = "LONGBLOB")
+    @Column(name = "profile_image", columnDefinition = "LONGBLOB")
     private byte[] profileImage;
     
+    @Column(name = "image_content_type")
     private String imageContentType;
 } 

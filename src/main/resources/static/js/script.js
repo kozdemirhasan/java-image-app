@@ -1,18 +1,40 @@
 function checkSession() {
     const loginTime = localStorage.getItem('loginTime');
-    if (loginTime) {
-        const currentTime = new Date().getTime();
-        const oneHour = 60 * 60 * 1000; // 1 saat
-        
-        if (currentTime - loginTime > oneHour) {
-            // Oturum süresi dolmuş
+    if (!loginTime) {
+        window.location.href = 'login.html';
+        return false;
+    }
+
+    const currentTime = new Date().getTime();
+    const oneHour = 60 * 60 * 1000; // 1 saat (milisaniye cinsinden)
+
+    if (currentTime - loginTime > oneHour) {
+        // Oturum süresi dolmuş
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = 'login.html';
+        return false;
+    }
+    return true;
+}
+
+// Her AJAX isteğinden önce oturum kontrolü yap
+function makeAuthenticatedRequest(url, options = {}) {
+    if (!checkSession()) {
+        return Promise.reject('Oturum süresi dolmuş');
+    }
+    
+    // İsteği gerçekleştir
+    return fetch(url, options).then(response => {
+        if (response.status === 401) {
+            // Yetkisiz erişim durumunda
             localStorage.clear();
             sessionStorage.clear();
             window.location.href = 'login.html';
-            return false;
+            return Promise.reject('Yetkisiz erişim');
         }
-    }
-    return true;
+        return response;
+    });
 }
 
 function checkAuth() {
@@ -81,8 +103,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Her dakika oturum kontrolü yap
-setInterval(checkSession, 60000);
+// Periyodik oturum kontrolü (her 5 dakikada bir)
+setInterval(checkSession, 5 * 60 * 1000);
 
 // Oyuncuları yükle
 function loadPlayers() {
